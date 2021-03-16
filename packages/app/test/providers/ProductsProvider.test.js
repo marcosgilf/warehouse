@@ -34,7 +34,8 @@ describe('ProductsProvider', () => {
 
     it('should return an empty object if the ajax call fails', async () => {
       sandbox.stub(console, 'warn');
-      sandbox.stub(window, 'fetch')
+      sandbox
+        .stub(window, 'fetch')
         .withArgs(endpoints.products)
         .resolves(mockApiResponse(apiProducts, 503));
       const response = await provider.getProducts();
@@ -55,7 +56,8 @@ describe('ProductsProvider', () => {
 
     it('should return an empty object if the ajax call fails', async () => {
       sandbox.stub(console, 'warn');
-      sandbox.stub(window, 'fetch')
+      sandbox
+        .stub(window, 'fetch')
         .withArgs(endpoints.articles)
         .resolves(mockApiResponse(apiArticles, 503));
       const response = await provider.getArticles();
@@ -77,12 +79,18 @@ describe('ProductsProvider', () => {
 
   describe('adapt', () => {
     it('should return products with articles if both params are defined', async () => {
-      const result = provider.adapt({ products: apiProducts, articles: apiArticles });
+      const result = provider.adapt({
+        products: apiProducts,
+        articles: apiArticles,
+      });
       expect(result).to.deep.equal(products);
     });
 
     it('should return products without articles if articles param is not defined', async () => {
-      const result = provider.adapt({ products: apiProducts, articles: undefined });
+      const result = provider.adapt({
+        products: apiProducts,
+        articles: undefined,
+      });
       expect(result).to.deep.equal(apiProducts);
     });
 

@@ -21,7 +21,8 @@ describe('App', () => {
 
   describe('when api calls return successfully', () => {
     beforeEach(async () => {
-      sandbox.stub(window, 'fetch')
+      sandbox
+        .stub(window, 'fetch')
         .withArgs(endpoints.products)
         .resolves(mockApiResponse(apiProducts))
         .withArgs(endpoints.articles)

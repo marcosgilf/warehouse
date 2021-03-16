@@ -22,10 +22,10 @@ window.onunload = () => {
   sandbox.restore();
 };
 
-
 function Template({ backgroundColor }) {
   if (!fetch.isSinonProxy) {
-    sandbox.stub(window, 'fetch')
+    sandbox
+      .stub(window, 'fetch')
       .withArgs(endpoints.products)
       .resolves(mockApiResponse(apiProducts))
       .withArgs(endpoints.articles)

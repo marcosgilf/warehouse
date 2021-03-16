@@ -25,7 +25,7 @@ npm i
 
 ## Tooling configs
 
-For most of the tools, the configuration is in the `package.json` to reduce the amount of files inside the  project.
+For most of the tools, the configuration is in the `package.json` to reduce the amount of files inside the project.
 
 ## Technology
 

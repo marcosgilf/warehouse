@@ -1,5 +1,5 @@
 import { html } from 'lit-html';
-import { products } from '../mocks/products.js';
+import { products, productsIncomplete } from '../mocks/products.js';
 import '../warehouse-products.js';
 
 export default {
@@ -9,11 +9,30 @@ export default {
 
 function Template({ productsFromApi }) {
   return html`
-    <warehouse-products .products=${productsFromApi}> </warehouse-products>
+    <warehouse-products
+      .products=${productsFromApi}
+      @product-clicked=${console.log}
+    >
+    </warehouse-products>
   `;
 }
 
-export const Products = Template.bind({});
-Products.args = {
+export const Default = Template.bind({});
+Default.args = {
   productsFromApi: products,
+};
+
+export const IncompleteData = Template.bind({});
+IncompleteData.args = {
+  productsFromApi: productsIncomplete,
+};
+
+export const EmptyData = Template.bind({});
+EmptyData.args = {
+  productsFromApi: [],
+};
+
+export const LoadingData = Template.bind({});
+LoadingData.args = {
+  productsFromApi: new Promise(() => 1),
 };

@@ -6,6 +6,7 @@ export class Products extends LitElement {
   static get properties() {
     return {
       products: { type: Array },
+      stock: { type: Array },
     };
   }
 
@@ -25,6 +26,26 @@ export class Products extends LitElement {
   constructor() {
     super();
     this.products = [];
+    this.stock = [];
+  }
+
+  updated(changedProperties) {
+    if (changedProperties.has('products')) {
+      this.stock =
+        this.products.length > 0
+          ? this.products.map(product => {
+              const amounts =
+                product.articles && product.articles[0].amountInStock
+                  ? product.articles.map(
+                      article => article.amountInStock / article.amountRequired,
+                    )
+                  : [];
+              const amountInStock =
+                Math.min(...amounts) !== Infinity ? Math.min(...amounts) : null;
+              return { id: product.id, amountInStock };
+            })
+          : [];
+    }
   }
 
   render() {
@@ -34,7 +55,10 @@ export class Products extends LitElement {
   resolveProducts() {
     if (this.products && this.products.then) {
       return until(
-        this.products.then(products => this.renderProductList(products)),
+        this.products.then(products => {
+          this.products = [...products];
+          return this.renderProductList(products);
+        }),
         'Loading...',
       );
     }
@@ -47,8 +71,10 @@ export class Products extends LitElement {
     return products && products.length > 0
       ? html`<ul class="products">
           ${products.map(
-            product => html` <li>
-              ${product.name} ${this.renderArticleList(product.articles)}
+            (product, index) => html` <li>
+              ${product.name} ${this.renderStock(index)}
+              ${this.renderBuyButton(product.id)}
+              ${this.renderArticleList(product.articles)}
             </li>`,
           )}
         </ul> `
@@ -59,8 +85,38 @@ export class Products extends LitElement {
   renderArticleList(articles) {
     return articles && articles[0].name
       ? html`<ul class="articles">
-          ${articles.map(article => html`<li>${article.name}</li>`)}
+          ${articles.map(
+            article =>
+              html`<li>
+                ${article.name}: ${article.amountRequired} (in stock
+                ${article.amountInStock})
+              </li>`,
+          )}
         </ul>`
       : nothing;
+  }
+
+  renderStock(index) {
+    return this.stock.length > 0 && this.stock[index].amountInStock
+      ? html`<span class="stock">${this.stock[index].amountInStock}</span>`
+      : nothing;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  renderBuyButton(id) {
+    return html`<button class="buy" @click=${e => this.handleClickEvent(e, id)}>
+      Buy
+    </button>`;
+  }
+
+  handleClickEvent(event, id) {
+    event.preventDefault();
+    this.dispatchEvent(
+      new CustomEvent('product-clicked', {
+        detail: {
+          id,
+        },
+      }),
+    );
   }
 }
