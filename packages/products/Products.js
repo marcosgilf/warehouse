@@ -1,44 +1,66 @@
 import { LitElement, html, css } from 'lit-element';
+import { nothing } from 'lit-html';
+import { until } from 'lit-html/directives/until';
 
 export class Products extends LitElement {
   static get properties() {
     return {
-      title: { type: String },
+      products: { type: Array },
     };
   }
 
   static get styles() {
     return css`
       :host {
-        min-height: 100vh;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: flex-start;
-        font-size: calc(10px + 2vmin);
-        color: #1a2b42;
-        max-width: 960px;
         margin: 0 auto;
         text-align: center;
-        background-color: var(--warehouse-app-background-color);
-      }
-
-      main {
-        flex-grow: 1;
       }
     `;
   }
 
   constructor() {
     super();
-    this.title = 'My products';
+    this.products = [];
   }
 
   render() {
-    return html`
-      <main>
-        <h1>${this.title}</h1>
-      </main>
-    `;
+    return html`${this.resolveProducts()}`;
+  }
+
+  resolveProducts() {
+    if (this.products && this.products.then) {
+      return until(
+        this.products.then(products => this.renderProductList(products)),
+        'Loading...',
+      );
+    }
+
+    return this.renderProductList(this.products);
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  renderProductList(products) {
+    return products && products.length > 0
+      ? html`<ul class="products">
+          ${products.map(
+            product => html` <li>
+              ${product.name} ${this.renderArticleList(product.articles)}
+            </li>`,
+          )}
+        </ul> `
+      : 'No products available now.';
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  renderArticleList(articles) {
+    return articles && articles[0].name
+      ? html`<ul class="articles">
+          ${articles.map(article => html`<li>${article.name}</li>`)}
+        </ul>`
+      : nothing;
   }
 }

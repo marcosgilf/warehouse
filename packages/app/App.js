@@ -1,90 +1,47 @@
-import { LitElement, html, css } from 'lit-element';
-import { openWcLogo } from './open-wc-logo.js';
+import { LitElement, html } from 'lit-element';
+import { styles } from './App.styles.js';
+import { ProductsProvider } from './providers/ProductsProvider.js';
+
+import '../products/warehouse-products.js';
 
 export class App extends LitElement {
   static get properties() {
     return {
-      title: { type: String },
+      products: { type: Array },
     };
   }
 
   static get styles() {
-    return css`
-      :host {
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: flex-start;
-        font-size: calc(10px + 2vmin);
-        color: #1a2b42;
-        max-width: 960px;
-        margin: 0 auto;
-        text-align: center;
-        background-color: var(--warehouse-app-background-color);
-      }
-
-      main {
-        flex-grow: 1;
-      }
-
-      .logo > svg {
-        margin-top: 36px;
-        animation: app-logo-spin infinite 20s linear;
-      }
-
-      @keyframes app-logo-spin {
-        from {
-          transform: rotate(0deg);
-        }
-        to {
-          transform: rotate(360deg);
-        }
-      }
-
-      .app-footer {
-        font-size: calc(12px + 0.5vmin);
-        align-items: center;
-      }
-
-      .app-footer a {
-        margin-left: 2px;
-      }
-    `;
+    return styles;
   }
 
   constructor() {
     super();
-    this.title = 'My app';
+
+    this.products = [];
+    this.provider = new ProductsProvider();
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+
+    this.initProducts();
   }
 
   render() {
     return html`
       <main>
-        <div class="logo">${openWcLogo}</div>
-        <h1>${this.title}</h1>
+        <h1>Warehouse</h1>
 
-        <p>Edit <code>packages/app/App.js</code> and save to reload.</p>
-        <a
-          class="app-link"
-          href="https://open-wc.org/guides/developing-components/code-examples/"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Code examples
-        </a>
+        <warehouse-products
+          class="products"
+          .products=${this.products}
+        ></warehouse-products>
       </main>
-
-      <p class="app-footer">
-        Made with love by
-        <a
-          target="_blank"
-          rel="noopener noreferrer"
-          href="https://github.com/marcosgilf"
-          >Marcos Gil</a
-        >
-        only using web standards.
-      </p>
     `;
+  }
+
+  initProducts() {
+    this.products = this.provider.getProductsForUi();
   }
 }
