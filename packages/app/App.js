@@ -4,11 +4,13 @@ import { styles } from './App.styles.js';
 import { ProductsProvider } from './providers/ProductsProvider.js';
 
 import '../products/warehouse-products.js';
+import '../cart/warehouse-cart.js';
 
 export class App extends LitElement {
   static get properties() {
     return {
       products: { type: Array },
+      articles: { type: Array },
       cart: { type: Array },
       stock: { type: Array },
     };
@@ -22,6 +24,7 @@ export class App extends LitElement {
     super();
 
     this.products = [];
+    this.articles = [];
     this.cart = [];
     this.stock = [];
     this.provider = new ProductsProvider();
@@ -31,23 +34,29 @@ export class App extends LitElement {
     super.connectedCallback();
 
     this.initProducts();
+    this.initArticles();
   }
 
   updated(changedProperties) {
     if (changedProperties.has('products')) {
       this.stock =
         this.products.length > 0
-          ? this.products.map(product => {
-              const amounts =
-                product.articles && product.articles[0].amountInStock
-                  ? product.articles.map(
-                      article => article.amountInStock / article.amountRequired,
-                    )
-                  : [];
-              const amountInStock =
-                Math.min(...amounts) !== Infinity ? Math.min(...amounts) : null;
-              return { id: product.id, amountInStock };
-            })
+          ? this.products
+              .map(product => {
+                const amounts =
+                  product.articles && product.articles[0].amountInStock
+                    ? product.articles.map(
+                        article =>
+                          article.amountInStock / article.amountRequired,
+                      )
+                    : [];
+                const amountInStock =
+                  Math.min(...amounts) !== Infinity
+                    ? Math.floor(Math.min(...amounts))
+                    : null;
+                return { id: product.id, amountInStock };
+              })
+              .filter(product => product.amountInStock)
           : [];
     }
   }
@@ -62,11 +71,26 @@ export class App extends LitElement {
   }
 
   initProducts() {
-    this.products = this.provider.getProductsForUi();
+    this.products = this.provider.getProducts();
+  }
+
+  async initArticles() {
+    this.articles = await this.provider.getArticles();
+    this.products = this.provider.adaptProducts({
+      products: this.products,
+      articles: this.articles,
+    });
   }
 
   postSale() {
-    // this.provider.postSale(this.cart);
+    if (this.cart && this.cart.length > 0) {
+      const promises = this.cart.map(product =>
+        this.provider.postSale(product),
+      );
+      Promise.all(promises).then(responses => {
+        console.log(responses);
+      });
+    }
     this.cart = [];
   }
 
@@ -107,16 +131,53 @@ export class App extends LitElement {
 
   handleProductClicked({ detail }) {
     if (!this.cart.find(product => product.id === detail.id)) {
-      this.cart = [
-        ...this.cart,
-        this.products.find(product => product.id === detail.id),
-      ];
+      const productInCart = this.products.find(
+        product => product.id === detail.id,
+      );
+      this.cart = [...this.cart, productInCart];
+      this.articles = this.articles.map(article => {
+        const articleInProduct = productInCart.articles.find(
+          articleToSubtrack => articleToSubtrack.id === article.id,
+        );
+        if (articleInProduct) {
+          return {
+            ...article,
+            amountInStock:
+              article.amountInStock - articleInProduct.amountRequired,
+          };
+        }
+        return article;
+      });
+      this.products = this.provider.adaptProducts({
+        products: this.products,
+        articles: this.articles,
+      });
     }
   }
 
   handleDeleteClicked({ detail }) {
     if (this.cart.find(product => product.id === detail.id)) {
-      this.cart = [...this.cart.filter(product => product.id !== detail.id)];
+      this.cart = this.cart.filter(product => product.id !== detail.id);
+      const productInCart = this.products.find(
+        product => product.id === detail.id,
+      );
+      this.articles = this.articles.map(article => {
+        const articleInProduct = productInCart.articles.find(
+          articleToSubtrack => articleToSubtrack.id === article.id,
+        );
+        if (articleInProduct) {
+          return {
+            ...article,
+            amountInStock:
+              article.amountInStock + articleInProduct.amountRequired,
+          };
+        }
+        return article;
+      });
+      this.products = this.provider.adaptProducts({
+        products: this.products,
+        articles: this.articles,
+      });
     }
   }
 }

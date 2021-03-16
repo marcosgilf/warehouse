@@ -70,16 +70,18 @@ export class Products extends LitElement {
   }
 
   renderStock(index) {
-    return this.stock.length > 0 && this.stock[index].amountInStock
+    return this.stock[index] && this.stock[index].amountInStock
       ? html`<span class="stock">${this.stock[index].amountInStock}</span>`
       : nothing;
   }
 
   // eslint-disable-next-line class-methods-use-this
   renderBuyButton(id) {
-    return html`<button class="buy" @click=${e => this.handleClickEvent(e, id)}>
-      Buy
-    </button>`;
+    return this.stock.find(product => product.id === id)
+      ? html`<button class="buy" @click=${e => this.handleClickEvent(e, id)}>
+          Buy
+        </button>`
+      : nothing;
   }
 
   handleClickEvent(event, id) {

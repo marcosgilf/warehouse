@@ -3,6 +3,7 @@ import sinon from 'sinon';
 import { products } from '../../../products/mocks/products.js';
 import { apiArticles } from '../../mocks/apiArticles.js';
 import { apiProducts } from '../../mocks/apiProducts.js';
+import { apiSale } from '../../mocks/apiSales.js';
 import { mockApiResponse } from '../../mocks/mockApiResponse.js';
 import { endpoints } from '../../providers/endpoints.js';
 
@@ -69,17 +70,17 @@ describe('ProductsProvider', () => {
     it('should call providers and adapter', async () => {
       sandbox.stub(provider, 'getProducts');
       sandbox.stub(provider, 'getArticles');
-      sandbox.stub(provider, 'adapt');
+      sandbox.stub(provider, 'adaptProducts');
       await provider.getProductsForUi();
       expect(provider.getProducts.calledOnce).to.be.true;
       expect(provider.getArticles.calledOnce).to.be.true;
-      expect(provider.adapt.calledOnce).to.be.true;
+      expect(provider.adaptProducts.calledOnce).to.be.true;
     });
   });
 
-  describe('adapt', () => {
+  describe('adaptProducts', () => {
     it('should return products with articles if both params are defined', async () => {
-      const result = provider.adapt({
+      const result = provider.adaptProducts({
         products: apiProducts,
         articles: apiArticles,
       });
@@ -87,7 +88,7 @@ describe('ProductsProvider', () => {
     });
 
     it('should return products without articles if articles param is not defined', async () => {
-      const result = provider.adapt({
+      const result = provider.adaptProducts({
         products: apiProducts,
         articles: undefined,
       });
@@ -95,8 +96,26 @@ describe('ProductsProvider', () => {
     });
 
     it('should return empty products if products param is not defined', async () => {
-      const result = provider.adapt();
+      const result = provider.adaptProducts();
       expect(result).to.deep.equal([]);
+    });
+  });
+
+  describe('postSale', () => {
+    it('should make an ajax call', async () => {
+      sandbox
+        .stub(window, 'fetch')
+        .withArgs(endpoints.sale)
+        .resolves(mockApiResponse(apiSale));
+      const response = await provider.postSale({ id: 'test' });
+      expect(window.fetch.calledOnce).to.be.true;
+      expect(window.fetch.args[0][1].body).to.deep.equal(
+        JSON.stringify({
+          productId: 'test',
+          amountSold: 1,
+        }),
+      );
+      expect(response.id).to.equal(apiSale.id);
     });
   });
 });

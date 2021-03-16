@@ -1,4 +1,4 @@
-import { html, fixture, expect, nextFrame } from '@open-wc/testing';
+import { html, fixture, expect } from '@open-wc/testing';
 import sinon from 'sinon';
 import { products } from '../../products/mocks/products.js';
 import { stock } from '../../products/mocks/stock.js';
@@ -58,13 +58,6 @@ describe('Cart', () => {
     it('should render "buy" button', () => {
       const buttons = element.shadowRoot.querySelectorAll('.buy');
       expect(buttons.length).to.equal(1);
-    });
-
-    it('should render "buy" button disabled when "stock" is empty', async () => {
-      element.stock = [];
-      await nextFrame();
-      const button = element.shadowRoot.querySelector('.buy');
-      expect(button.hasAttribute('disabled')).to.be.true;
     });
 
     it('should render "delete" button', () => {

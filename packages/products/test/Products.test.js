@@ -66,7 +66,7 @@ describe('Products', () => {
       expect(stockElement[1].innerHTML).to.contain('1');
     });
 
-    it('should render "buy" button', async () => {
+    it('should render "buy" button if the product has stock', async () => {
       const buttons = element.shadowRoot.querySelectorAll('.buy');
       expect(buttons.length).to.equal(2);
     });
@@ -101,9 +101,9 @@ describe('Products', () => {
       expect(stockElement).to.be.empty;
     });
 
-    it('should render "buy" button', async () => {
+    it('should not render "buy" button if product has not stock', async () => {
       const buttons = element.shadowRoot.querySelectorAll('.buy');
-      expect(buttons.length).to.equal(2);
+      expect(buttons.length).to.equal(0);
     });
   });
 
@@ -112,7 +112,8 @@ describe('Products', () => {
       const spy = sinon.spy();
       element = await fixture(
         html`<warehouse-products
-          .products=${productsIncomplete}
+          .products=${products}
+          .stock=${stock}
           @product-clicked=${spy}
         ></warehouse-products>`,
       );
@@ -121,7 +122,7 @@ describe('Products', () => {
       product.click();
 
       expect(spy.calledOnce).to.be.true;
-      expect(spy.args[0][0].detail.id).to.equal(productsIncomplete[0].id);
+      expect(spy.args[0][0].detail.id).to.equal(products[0].id);
     });
   });
 });

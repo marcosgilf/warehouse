@@ -4,7 +4,6 @@ export class Cart extends LitElement {
   static get properties() {
     return {
       cart: { type: Array },
-      stock: { type: Array },
     };
   }
 
@@ -24,7 +23,6 @@ export class Cart extends LitElement {
   constructor() {
     super();
     this.cart = [];
-    this.stock = [];
   }
 
   render() {
@@ -68,11 +66,7 @@ export class Cart extends LitElement {
   }
 
   renderBuyButton() {
-    return html`<button
-      class="buy"
-      @click=${e => this.handleClickEvent(e)}
-      ?disabled=${this.stock && this.stock.length === 0}
-    >
+    return html`<button class="buy" @click=${e => this.handleClickEvent(e)}>
       Buy
     </button>`;
   }
