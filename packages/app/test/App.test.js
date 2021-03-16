@@ -1,5 +1,7 @@
-import { html, fixture, expect } from '@open-wc/testing';
+import { html, fixture, expect, nextFrame } from '@open-wc/testing';
 import sinon from 'sinon';
+import { products } from '../../products/mocks/products.js';
+import { stock } from '../../products/mocks/stock.js';
 import { apiArticles } from '../mocks/apiArticles.js';
 import { apiProducts } from '../mocks/apiProducts.js';
 import { mockApiResponse } from '../mocks/mockApiResponse.js';
@@ -19,7 +21,7 @@ describe('App', () => {
     sandbox.restore();
   });
 
-  describe('when api calls return successfully', () => {
+  describe('initialization', () => {
     beforeEach(async () => {
       sandbox
         .stub(window, 'fetch')
@@ -31,13 +33,22 @@ describe('App', () => {
       element = await fixture(html`<warehouse-app></warehouse-app>`);
     });
 
-    it('renders products component', () => {
-      const component = element.shadowRoot.querySelector('.products');
-      expect(component.products).to.be.instanceOf(Promise);
+    it('should render loading text if products is an unresolved promise', async () => {
+      element.products = new Promise(() => 1);
+      await nextFrame();
+      expect(element.shadowRoot.innerHTML).to.contain('Loading...');
     });
 
-    it('passes the a11y audit', async () => {
-      await expect(element).shadowDom.to.be.accessible();
+    it('should resolve products provider promise', async () => {
+      await nextFrame();
+      await nextFrame();
+      expect(element.products).to.deep.equal(products);
+      expect(element.shadowRoot.querySelector('.products')).dom.to.exist;
+    });
+
+    it('should initialize stock property', async () => {
+      await nextFrame();
+      expect(element.stock).to.deep.equal(stock);
     });
   });
 });

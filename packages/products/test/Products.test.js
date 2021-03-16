@@ -1,6 +1,7 @@
 import { html, fixture, expect, nextFrame } from '@open-wc/testing';
 import sinon from 'sinon';
 import { products, productsIncomplete } from '../mocks/products.js';
+import { stock } from '../mocks/stock.js';
 
 import '../warehouse-products.js';
 
@@ -36,7 +37,10 @@ describe('Products', () => {
   describe('when products is complete', () => {
     beforeEach(async () => {
       element = await fixture(
-        html`<warehouse-products .products=${products}></warehouse-products>`,
+        html`<warehouse-products
+          .products=${products}
+          .stock=${stock}
+        ></warehouse-products>`,
       );
     });
 
@@ -57,9 +61,9 @@ describe('Products', () => {
     });
 
     it('should render products stock', () => {
-      const stock = element.shadowRoot.querySelectorAll('.stock');
-      expect(stock[0].innerHTML).to.contain('2');
-      expect(stock[1].innerHTML).to.contain('1');
+      const stockElement = element.shadowRoot.querySelectorAll('.stock');
+      expect(stockElement[0].innerHTML).to.contain('2');
+      expect(stockElement[1].innerHTML).to.contain('1');
     });
 
     it('should render "buy" button', async () => {
@@ -93,8 +97,8 @@ describe('Products', () => {
     });
 
     it('should not render products stock', () => {
-      const stock = element.shadowRoot.querySelectorAll('.stock');
-      expect(stock).to.be.empty;
+      const stockElement = element.shadowRoot.querySelectorAll('.stock');
+      expect(stockElement).to.be.empty;
     });
 
     it('should render "buy" button', async () => {
@@ -103,7 +107,7 @@ describe('Products', () => {
     });
   });
 
-  describe('handleClickEvent', () => {
+  describe('events', () => {
     it('should send "product-clicked" with "id" when the user clicks on a product', async () => {
       const spy = sinon.spy();
       element = await fixture(
