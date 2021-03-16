@@ -13,7 +13,8 @@ function Template({ productsInsideCart, computedStock }) {
     <warehouse-cart
       .cart=${productsInsideCart}
       .stock=${computedStock}
-      @product-clicked=${console.log}
+      @delete-clicked=${console.log}
+      @buy-clicked=${console.log}
     >
     </warehouse-cart>
   `;

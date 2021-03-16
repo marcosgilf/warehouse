@@ -9,6 +9,7 @@ export class App extends LitElement {
   static get properties() {
     return {
       products: { type: Array },
+      cart: { type: Array },
       stock: { type: Array },
     };
   }
@@ -21,6 +22,7 @@ export class App extends LitElement {
     super();
 
     this.products = [];
+    this.cart = [];
     this.stock = [];
     this.provider = new ProductsProvider();
   }
@@ -54,13 +56,18 @@ export class App extends LitElement {
     return html`
       <main>
         <h1>Warehouse</h1>
-        ${this.resolveProducts()}
+        ${this.resolveProducts()} ${this.renderCart()}
       </main>
     `;
   }
 
   initProducts() {
     this.products = this.provider.getProductsForUi();
+  }
+
+  postSale() {
+    // this.provider.postSale(this.cart);
+    this.cart = [];
   }
 
   resolveProducts() {
@@ -83,7 +90,33 @@ export class App extends LitElement {
         class="products"
         .products=${this.products}
         .stock=${this.stock}
+        @product-clicked=${this.handleProductClicked}
       ></warehouse-products>
     `;
+  }
+
+  renderCart() {
+    return html`<warehouse-cart
+      class="cart"
+      .cart=${this.cart}
+      .stock=${this.stock}
+      @delete-clicked=${this.handleDeleteClicked}
+      @buy-clicked=${() => this.postSale()}
+    ></warehouse-cart>`;
+  }
+
+  handleProductClicked({ detail }) {
+    if (!this.cart.find(product => product.id === detail.id)) {
+      this.cart = [
+        ...this.cart,
+        this.products.find(product => product.id === detail.id),
+      ];
+    }
+  }
+
+  handleDeleteClicked({ detail }) {
+    if (this.cart.find(product => product.id === detail.id)) {
+      this.cart = [...this.cart.filter(product => product.id !== detail.id)];
+    }
   }
 }

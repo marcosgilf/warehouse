@@ -21,7 +21,7 @@ describe('App', () => {
     sandbox.restore();
   });
 
-  describe('initialization', () => {
+  describe('products', () => {
     beforeEach(async () => {
       sandbox
         .stub(window, 'fetch')
@@ -48,7 +48,75 @@ describe('App', () => {
 
     it('should initialize stock property', async () => {
       await nextFrame();
+      await nextFrame();
       expect(element.stock).to.deep.equal(stock);
+    });
+  });
+
+  describe('cart', () => {
+    beforeEach(async () => {
+      sandbox
+        .stub(window, 'fetch')
+        .withArgs(endpoints.products)
+        .resolves(mockApiResponse(apiProducts))
+        .withArgs(endpoints.articles)
+        .resolves(mockApiResponse(apiArticles));
+
+      element = await fixture(html`<warehouse-app></warehouse-app>`);
+      await nextFrame();
+      await nextFrame();
+    });
+
+    it('should render cart component when cart property is setted', async () => {
+      element.cart = [{ name: 'test', id: 'test' }];
+      await nextFrame();
+      expect(element.shadowRoot.querySelector('.cart')).dom.to.exist;
+    });
+
+    it('should update cart property on "product-clicked" event', async () => {
+      const productsElement = element.shadowRoot.querySelector('.products');
+      productsElement.dispatchEvent(
+        new CustomEvent('product-clicked', {
+          detail: { id: 'a269a247-0d38-4b47-9630-79c9ae545b68' },
+        }),
+      );
+      await nextFrame();
+      expect(element.cart.length).to.equal(1);
+    });
+
+    it('should not update cart property on "product-clicked" event if the product is already in the cart', async () => {
+      const productsElement = element.shadowRoot.querySelector('.products');
+      productsElement.dispatchEvent(
+        new CustomEvent('product-clicked', {
+          detail: { id: 'a269a247-0d38-4b47-9630-79c9ae545b68' },
+        }),
+      );
+      productsElement.dispatchEvent(
+        new CustomEvent('product-clicked', {
+          detail: { id: 'a269a247-0d38-4b47-9630-79c9ae545b68' },
+        }),
+      );
+      await nextFrame();
+      expect(element.cart.length).to.equal(1);
+    });
+
+    it('should update cart property on "delete-clicked" event', async () => {
+      element.cart = [{ name: 'test', id: 'test' }];
+      const cartElement = element.shadowRoot.querySelector('.cart');
+      cartElement.dispatchEvent(
+        new CustomEvent('delete-clicked', { detail: { id: 'test' } }),
+      );
+      await nextFrame();
+      expect(element.cart.length).to.equal(0);
+    });
+
+    it('should call post provider with cart data on "buy-clicked" event', async () => {
+      sandbox.stub(element, 'postSale');
+      element.cart = [{ name: 'test', id: 'test' }];
+      const cartElement = element.shadowRoot.querySelector('.cart');
+      cartElement.dispatchEvent(new CustomEvent('buy-clicked'));
+      await nextFrame();
+      expect(element.postSale.calledOnce).to.be.true;
     });
   });
 });
