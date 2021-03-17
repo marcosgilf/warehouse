@@ -1,5 +1,6 @@
 import { LitElement, html } from 'lit-element';
 import { until } from 'lit-html/directives/until';
+import { nothing } from 'lit-html';
 import { styles } from './App.styles.js';
 import { ProductsProvider } from './providers/ProductsProvider.js';
 
@@ -65,6 +66,7 @@ export class App extends LitElement {
     return html`
       <main>
         <h1>Warehouse</h1>
+        ${this.products && this.products.then || this.articles && this.articles.length === 0 ? 'Loading...' : nothing}
         ${this.resolveProducts()} ${this.renderCart()}
       </main>
     `;
@@ -84,9 +86,10 @@ export class App extends LitElement {
     }
   }
 
-  postSale() {
-    this.provider.postSale(this.cart);
+  async postSale() {
+    await this.provider.postSale(this.cart);
     this.cart = [];
+    this.initArticles();
   }
 
   resolveProducts() {
@@ -103,7 +106,7 @@ export class App extends LitElement {
           }
           return this.renderProducts(products);
         }),
-        'Loading...',
+        nothing,
       );
     }
 

@@ -1,4 +1,5 @@
-import { LitElement, html, css } from 'lit-element';
+import { LitElement, html } from 'lit-element';
+import { styles } from './Cart.styles.js';
 
 export class Cart extends LitElement {
   static get properties() {
@@ -8,16 +9,7 @@ export class Cart extends LitElement {
   }
 
   static get styles() {
-    return css`
-      :host {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: flex-start;
-        margin: 0 auto;
-        text-align: center;
-      }
-    `;
+    return styles;
   }
 
   constructor() {
@@ -26,19 +18,19 @@ export class Cart extends LitElement {
   }
 
   render() {
-    return html` ${this.renderCart()} `;
+    return html`<div class="container">${this.renderCart()}</div>`;
   }
 
   renderCart() {
     if (this.cart && this.cart.length > 0) {
-      return html`<ul class="cart">
+      return html`<ol class="cart">
           ${this.cart.map(
             product =>
               html`<li>
                 ${product.name}${this.renderDeleteButton(product.id)}
               </li>`,
           )}
-        </ul>
+        </ol>
         ${this.renderBuyButton()}`;
     }
 

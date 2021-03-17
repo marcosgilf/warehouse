@@ -23,7 +23,7 @@ window.onunload = () => {
   sandbox.restore();
 };
 
-function Template({ backgroundColor }) {
+function Template() {
   if (!fetch.isSinonProxy) {
     sandbox
       .stub(window, 'fetch')
@@ -44,10 +44,7 @@ function Template({ backgroundColor }) {
   }
 
   return html`
-    <warehouse-app
-      style="--warehouse-app-background-color: ${backgroundColor || 'white'}"
-    >
-    </warehouse-app>
+    <warehouse-app></warehouse-app>
   `;
 }
 

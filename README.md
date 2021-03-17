@@ -45,4 +45,9 @@ This app aims to be future proof and use well-supported proven technology. The s
 - [Storybook](https://storybook.js.org)
 - [ES modules](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import)
 - [Rollup](https://rollupjs.org/)
-- Lots and lots of tests
+- Lo
+
+## TODO
+
+- Fix articles PATCH CORS error
+- Improve provider's postSale error handling

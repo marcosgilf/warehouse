@@ -1,5 +1,6 @@
-import { LitElement, html, css } from 'lit-element';
+import { LitElement, html } from 'lit-element';
 import { nothing } from 'lit-html';
+import { styles } from './Products.styles.js';
 
 export class Products extends LitElement {
   static get properties() {
@@ -10,16 +11,7 @@ export class Products extends LitElement {
   }
 
   static get styles() {
-    return css`
-      :host {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: flex-start;
-        margin: 0 auto;
-        text-align: center;
-      }
-    `;
+    return styles;
   }
 
   constructor() {
@@ -45,9 +37,11 @@ export class Products extends LitElement {
       ? html`<ul class="products">
           ${this.products.map(
             (product, index) => html` <li>
-              ${product.name} ${this.renderStock(index)}
-              ${this.renderBuyButton(product.id)}
-              ${this.renderArticleList(product.articles)}
+              <div class="product-header"><h2>${product.name}</h2> ${this.renderStock(index)}</div>
+              <div class="products-body">
+                ${this.renderArticleList(product.articles)}
+                ${this.renderBuyButton(product.id)}
+              </div>
             </li>`,
           )}
         </ul> `
@@ -71,7 +65,7 @@ export class Products extends LitElement {
 
   renderStock(index) {
     return this.stock[index] && this.stock[index].amountInStock
-      ? html`<span class="stock">${this.stock[index].amountInStock}</span>`
+      ? html`<span class="stock">STOCK ${this.stock[index].amountInStock}</span>`
       : nothing;
   }
 
@@ -79,7 +73,7 @@ export class Products extends LitElement {
   renderBuyButton(id) {
     return this.stock.find(product => product.id === id)
       ? html`<button class="buy" @click=${e => this.handleClickEvent(e, id)}>
-          Buy
+          Add to cart
         </button>`
       : nothing;
   }
