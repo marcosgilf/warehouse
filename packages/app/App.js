@@ -76,21 +76,16 @@ export class App extends LitElement {
 
   async initArticles() {
     this.articles = await this.provider.getArticles();
-    this.products = this.provider.adaptProducts({
-      products: this.products,
-      articles: this.articles,
-    });
+    if (this.products && this.products.length > 0) {
+      this.products = this.provider.adaptProducts({
+        products: this.products,
+        articles: this.articles,
+      });
+    }
   }
 
   postSale() {
-    if (this.cart && this.cart.length > 0) {
-      const promises = this.cart.map(product =>
-        this.provider.postSale(product),
-      );
-      Promise.all(promises).then(responses => {
-        console.log(responses);
-      });
-    }
+    this.provider.postSale(this.cart);
     this.cart = [];
   }
 
@@ -98,7 +93,14 @@ export class App extends LitElement {
     if (this.products && this.products.then) {
       return until(
         this.products.then(products => {
-          this.products = [...products];
+          if (this.articles && this.articles.length > 0) {
+            this.products = this.provider.adaptProducts({
+              products,
+              articles: this.articles,
+            });
+          } else {
+            this.products = [...products];
+          }
           return this.renderProducts(products);
         }),
         'Loading...',

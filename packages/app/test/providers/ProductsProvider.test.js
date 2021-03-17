@@ -1,7 +1,7 @@
 import { expect } from '@open-wc/testing';
 import sinon from 'sinon';
 import { products } from '../../../products/mocks/products.js';
-import { apiArticles } from '../../mocks/apiArticles.js';
+import { apiArticles, apiArticlesPatch } from '../../mocks/apiArticles.js';
 import { apiProducts } from '../../mocks/apiProducts.js';
 import { apiSale } from '../../mocks/apiSales.js';
 import { mockApiResponse } from '../../mocks/mockApiResponse.js';
@@ -66,18 +66,6 @@ describe('ProductsProvider', () => {
     });
   });
 
-  describe('getProductsForUi', () => {
-    it('should call providers and adapter', async () => {
-      sandbox.stub(provider, 'getProducts');
-      sandbox.stub(provider, 'getArticles');
-      sandbox.stub(provider, 'adaptProducts');
-      await provider.getProductsForUi();
-      expect(provider.getProducts.calledOnce).to.be.true;
-      expect(provider.getArticles.calledOnce).to.be.true;
-      expect(provider.adaptProducts.calledOnce).to.be.true;
-    });
-  });
-
   describe('adaptProducts', () => {
     it('should return products with articles if both params are defined', async () => {
       const result = provider.adaptProducts({
@@ -102,20 +90,25 @@ describe('ProductsProvider', () => {
   });
 
   describe('postSale', () => {
-    it('should make an ajax call', async () => {
+    it('should perform a POST call to save sale', async () => {
       sandbox
         .stub(window, 'fetch')
         .withArgs(endpoints.sale)
-        .resolves(mockApiResponse(apiSale));
-      const response = await provider.postSale({ id: 'test' });
-      expect(window.fetch.calledOnce).to.be.true;
+        .resolves(mockApiResponse(apiSale))
+        .withArgs(endpoints.articles)
+        .resolves(mockApiResponse(apiArticlesPatch));
+      const response = await provider.postSale([products[0]]);
+      expect(window.fetch.calledTwice).to.be.true;
       expect(window.fetch.args[0][1].body).to.deep.equal(
         JSON.stringify({
-          productId: 'test',
+          productId: 'a269a247-0d38-4b47-9630-79c9ae545b68',
           amountSold: 1,
         }),
       );
-      expect(response.id).to.equal(apiSale.id);
+      const postResponse = await response[0];
+      expect(postResponse.id).to.equal(apiSale.id);
+      const patchResponse = await response[1];
+      expect(patchResponse[0].id).to.equal(apiArticlesPatch[0].id);
     });
   });
 });

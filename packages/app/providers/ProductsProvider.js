@@ -2,12 +2,6 @@ import { endpoints } from './endpoints.js';
 
 /* eslint-disable class-methods-use-this */
 export class ProductsProvider {
-  async getProductsForUi() {
-    const products = await this.getProducts();
-    const articles = await this.getArticles();
-    return this.adaptProducts({ products, articles });
-  }
-
   async getProducts() {
     try {
       const response = await fetch(endpoints.products);
@@ -61,23 +55,42 @@ export class ProductsProvider {
   }
 
   async postSale(data) {
-    try {
+    const salePromises = data.map(async product => {
       const response = await fetch(endpoints.sale, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json; charset=utf-8',
         },
-        body: JSON.stringify(this.adaptSale(data)),
+        body: JSON.stringify(this.adaptSale(product)),
       });
-      if (response.ok) {
-        return response.clone().json();
-      }
-      throw new Error(response.statusText);
-    } catch (e) {
-      // eslint-disable-next-line no-console
-      console.warn(e);
-      return [];
-    }
+      return response;
+    });
+
+    const articlesPromises = data.map(async product => {
+      const response = await fetch(endpoints.articles, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(this.adaptArticles(product)),
+      });
+      return response;
+    });
+
+    return Promise.all([...salePromises, ...articlesPromises])
+      .then(responses =>
+        responses.map(response => {
+          if (response.ok) {
+            return response.json();
+          }
+          throw new Error(response.statusText);
+        }),
+      )
+      .catch(e => {
+        // eslint-disable-next-line no-console
+        console.warn(e);
+        return [];
+      });
   }
 
   adaptSale(sale) {
@@ -85,5 +98,12 @@ export class ProductsProvider {
       productId: sale.id,
       amountSold: 1,
     };
+  }
+
+  adaptArticles(product) {
+    return product.articles.map(article => ({
+        id: article.id,
+        amountToSubtract: article.amountRequired,
+    }));
   }
 }
